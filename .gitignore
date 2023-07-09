@@ -1,0 +1,3 @@
+/target
+delete_target_images/*
+!delete_target_images/.gitkeep
