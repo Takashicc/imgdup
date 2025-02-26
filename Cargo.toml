@@ -1,12 +1,16 @@
 [package]
 name = "imgdup"
 version = "0.1.0"
+authors = ["Takashicc <105186894+Takashicc@users.noreply.github.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = "0.24.6"
-indicatif = "0.17.5"
-rayon = "1.7.0"
-walkdir = "2.3.3"
+dioxus = { version = "0.6.0", features = [] }
+
+[features]
+default = ["desktop"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
