@@ -249,8 +249,15 @@ fn Content() -> Element {
 // https://github.com/DioxusLabs/dioxus/issues/1814
 // https://github.com/tauri-apps/tauri/blob/f37e97d410c4a219e99f97692da05ca9d8e0ba3a/crates/tauri/scripts/core.js#L17
 fn normalize_path(p: &str) -> String {
-    let p = p.replace("\\", "/");
-    format!("http://dioxus.localhost/{p}")
+    #[cfg(target_os = "windows")]
+    {
+        let p = p.replace("\\", "/");
+        format!("http://dioxus.localhost/{p}")
+    }
+    #[cfg(target_os = "macos")]
+    {
+        format!("{p}")
+    }
 }
 
 #[server]
@@ -300,7 +307,15 @@ async fn open_folder_in_explorer(path: String) -> Result<(), ServerFnError> {
             .spawn()
             .map_err(|e| ServerFnError::new(e.to_string()))?;
     }
-    // TODO mac
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        Command::new("open")
+            .arg("-R")
+            .arg(path)
+            .spawn()
+            .map_err(|e| ServerFnError::new(e.to_string()))?;
+    }
 
     Ok(())
 }
