@@ -13,6 +13,8 @@ pub fn Home() -> Element {
     let mut is_searching = use_signal(|| false);
 
     rsx! {
+        ReferenceImages {  }
+
         div { class: "container mx-auto p-4",
             div { class: "flex flex-row items-center pb-4",
                 input {
@@ -138,7 +140,54 @@ pub fn Home() -> Element {
                 "Delete selected images"
             }
         }
-        // TODO modal
+    }
+}
 
+#[component]
+fn ReferenceImages() -> Element {
+    let mut selected_files = use_signal(Vec::<String>::new);
+
+    rsx! {
+        button {
+            class: "btn btn-outline btn-primary",
+            onclick: move |_| {
+                document::eval("register_reference_images_modal.showModal()");
+                selected_files.write().clear();
+            },
+            "Reference images"
+        }
+        dialog { id: "register_reference_images_modal", class: "modal",
+            div { class: "modal-box",
+                h3 { class: "mb-4", "Register reference images" }
+                div { class: "flex flex-row items-center pb-4",
+                    input {
+                        r#type: "file",
+                        id: "custom-input",
+                        multiple: true,
+                        hidden: true,
+                        onchange: move |e| {
+                            if let Some(file_engine) = e.files() {
+                                let files = file_engine.files();
+                                selected_files.write().extend(files.iter().map(|file| file.to_string()));
+                            }
+                        },
+                    }
+                    label {
+                        r#for: "custom-input",
+                        class: "btn btn-outline btn-primary mr-3",
+                        "Select files"
+                    }
+                    label {
+                        class: "text-sm text-slate-500",
+                        if selected_files().len() == 0 {
+                            "No files selected"
+                        } else {
+                            {selected_files().join(", ")}
+                        }
+                    }
+                }
+                h3 { "Registered reference images" }
+            }
+        }
     }
 }
