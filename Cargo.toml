@@ -4,10 +4,13 @@ version = "0.1.0"
 authors = ["Takashicc <105186894+Takashicc@users.noreply.github.com>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = ["migration"]
 
 [dependencies]
+migration = { path = "migration" }
 anyhow = "1.0.96"
+chrono = { version = "0.4.40", features = ["serde"] }
 dioxus = { version = "0.6.0", features = ["fullstack"] }
 image = { version = ">=0.21,<0.24", default-features = false, features = [
     "jpeg",
@@ -17,6 +20,12 @@ img_hash = "3.2.0"
 rayon = "1.10.0"
 serde = "1.0.218"
 walkdir = "2.5.0"
+sea-orm = { version = "1.1.0", features = [
+    "sqlx-sqlite",
+    "runtime-tokio-native-tls",
+    "macros",
+] }
+
 
 [features]
 default = ["desktop"]
