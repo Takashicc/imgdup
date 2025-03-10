@@ -1,5 +1,13 @@
 version: 3
 
+vars:
+  DATABASE_URL: "sqlite://db.sqlite?mode=rwc"
+
+includes:
+  migration:
+    dir: migration
+    taskfile: migration/Taskfile.yml
+
 tasks:
   default:
     cmd: task -l --sort none
@@ -7,3 +15,7 @@ tasks:
   tailwind:
     desc: "Build Tailwind CSS"
     cmd: npx @tailwindcss/cli -i ./input.css -o ./assets/tailwind.css --watch
+
+  generate-entity:
+    desc: "Generate an entity from database"
+    cmd: sea-orm-cli generate entity -u {{.DATABASE_URL}} -o entity/src -l

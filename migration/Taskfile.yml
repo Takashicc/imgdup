@@ -1,7 +1,7 @@
 version: "3"
 
 env:
-  DATABASE_URL: "sqlite://db.sqlite?mode=rwc"
+  DATABASE_URL: "sqlite://../db.sqlite?mode=rwc"
 
 tasks:
   default:
