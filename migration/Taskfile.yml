@@ -1,0 +1,50 @@
+version: "3"
+
+env:
+  DATABASE_URL: "sqlite://db.sqlite?mode=rwc"
+
+tasks:
+  default:
+    cmd: task -l --sort none
+
+  internal:
+    internal: true
+    cmd: cargo run -- {{.CLI_ARGS}}
+
+  generate:
+    desc: "Generate a new migration"
+    requires:
+      vars:
+        - name
+    cmd:
+      task: internal
+      vars:
+        CLI_ARGS: generate {{.name}} {{.CLI_ARGS}}
+
+  up:
+    desc: "Run the migrations"
+    cmd:
+      task: internal
+      vars:
+        CLI_ARGS: up {{.CLI_ARGS}}
+
+  down:
+    desc: "Rollback the migrations"
+    cmd:
+      task: internal
+      vars:
+        CLI_ARGS: down {{.CLI_ARGS}}
+
+  fresh:
+    desc: "Drop all tables and run the migrations"
+    cmd:
+      task: internal
+      vars:
+        CLI_ARGS: fresh {{.CLI_ARGS}}
+
+  status:
+    desc: "Show the status of the migrations"
+    cmd:
+      task: internal
+      vars:
+        CLI_ARGS: status {{.CLI_ARGS}}
