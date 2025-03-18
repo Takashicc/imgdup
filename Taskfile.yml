@@ -18,4 +18,4 @@ tasks:
 
   generate-entity:
     desc: "Generate an entity from database"
-    cmd: sea-orm-cli generate entity -u {{.DATABASE_URL}} -o entity/src -l
+    cmd: sea-orm-cli generate entity --with-serde both -u {{.DATABASE_URL}} -o entity/src -l
