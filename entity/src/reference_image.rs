@@ -9,7 +9,8 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub filepath: String,
-    pub hash: String,
+    #[sea_orm(column_type = "Binary(1)")]
+    pub hash: Vec<u8>,
     pub created_at: DateTimeUtc,
     pub updated_at: DateTimeUtc,
 }
