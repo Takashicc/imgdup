@@ -1,3 +1,5 @@
+pub mod reference_image;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
