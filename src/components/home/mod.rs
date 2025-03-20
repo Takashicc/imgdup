@@ -31,7 +31,7 @@ pub fn Home() -> Element {
                 disabled: is_searching(),
                 onclick: move |_| async move {
                     if selected_directory().is_empty() {
-                        common::show_toast("Please select a directory", common::ToastType::Warning).await;
+                        common::show_toast("Please select a directory", common::ToastType::Info).await;
                         return;
                     }
 
