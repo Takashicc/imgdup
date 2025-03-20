@@ -41,7 +41,7 @@ Run the following command to generate the [./assets/tailwind.css](/assets/tailwi
 task tailwind
 ```
 
-Open a a new terminal window and run the following command to build, watch & serve the Dioxus project:
+Open a new terminal window and run the following command to build, watch & serve the Dioxus project:
 
 ```bash
 dx serve
