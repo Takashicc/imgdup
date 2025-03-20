@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use dioxus::prelude::*;
 
 use crate::backend;
+use crate::components::common;
 use crate::models;
 use crate::utils;
 
@@ -17,10 +18,7 @@ pub fn SearchResult(
             h1 { class: "text-2xl font-bold mb-4", "Duplicated image search results" }
 
             if is_searching() {
-                div { class: "flex flex-col items-center gap-4",
-                    div { class: "loading loading-spinner loading-xl w-24 h-24" }
-                    div { class: "text-gray-500 text-sm", "Searching for duplicated images..." }
-                }
+                common::LoadingSpinner{ message: "Searching for duplicated images..." }
             } else if similar_images.is_empty() {
                 div { class: "text-left text-gray-500", "No results" }
             } else {

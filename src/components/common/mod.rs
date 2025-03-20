@@ -1,3 +1,5 @@
+use dioxus::prelude::*;
+
 pub enum ToastType {
     Info,
     Success,
@@ -23,7 +25,7 @@ pub async fn show_toast(message: &str, toast_type: ToastType) {
     alert.className = 'alert {alert_class}';
 
     const span = document.createElement('span');
-    span.textContent = 'Please select a directory';
+    span.textContent = '{message}';
 
     alert.appendChild(span);
     toast.appendChild(alert);
@@ -38,4 +40,14 @@ pub async fn show_toast(message: &str, toast_type: ToastType) {
     "#,
     );
     let _ = dioxus::document::eval(js.as_str()).await;
+}
+
+#[component]
+pub fn LoadingSpinner(message: String) -> Element {
+    rsx! {
+        div { class: "flex flex-col items-center gap-4",
+            div { class: "loading loading-spinner loading-xl w-24 h-24" }
+            div { class: "text-gray-500 text-sm", "{message}" }
+        }
+    }
 }
