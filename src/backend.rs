@@ -1,9 +1,10 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use anyhow::{Context, Result};
 use dioxus::prelude::*;
+use sea_orm::IntoActiveModel;
 
-use crate::{config, image_processing, models};
+use crate::{adapter::sqlite::get_db, image_processing, models, repositories};
 
 #[server]
 pub async fn search_similar_images(
@@ -19,7 +20,15 @@ pub async fn search_similar_images(
     };
 
     use rayon::prelude::*;
-    let reference_hashes = config::get_reference_hashes();
+    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
+        get_db().await.clone(),
+    );
+    let reference_images = repo.find_all().await?;
+    let reference_hashes = reference_images
+        .iter()
+        .map(|i| img_hash::ImageHash::from_bytes(&i.hash).unwrap())
+        .collect::<Vec<_>>();
+
     let mut calc_results = target_files
         .par_iter()
         .filter_map(|filepath| {
@@ -83,6 +92,68 @@ fn scan_images(directory: &str) -> Result<Vec<String>> {
     }
 
     Ok(targets)
+}
+
+#[server]
+pub async fn register_reference_images(selected_files: Vec<String>) -> Result<(), ServerFnError> {
+    if selected_files.is_empty() {
+        return Ok(());
+    }
+
+    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
+        get_db().await.clone(),
+    );
+
+    let existing_images = repo.find_by_filepaths(&selected_files).await?;
+    let existing_filepaths = existing_images
+        .iter()
+        .map(|i| (i.filepath.clone(), i.clone().into_active_model()))
+        .collect::<HashMap<String, entity::reference_image::ActiveModel>>();
+
+    // TODO rayon
+    let mut new_images = Vec::new();
+    for selected_file in selected_files {
+        let hash = image_processing::compute_hash(&selected_file)
+            .unwrap()
+            .as_bytes()
+            .to_vec();
+
+        if let Some(v) = existing_filepaths.get(&selected_file) {
+            let mut v = v.clone();
+            v.hash = sea_orm::Set(hash);
+            repo.update(v).await?;
+        } else {
+            new_images.push(models::reference_image::ReferenceImageInput {
+                filepath: selected_file,
+                hash,
+            })
+        }
+    }
+
+    repo.create_many(new_images).await?;
+
+    Ok(())
+}
+
+#[server]
+pub async fn get_registered_reference_images(
+) -> Result<Vec<entity::reference_image::Model>, ServerFnError> {
+    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
+        get_db().await.clone(),
+    );
+
+    let reference_images = repo.find_all().await?;
+    Ok(reference_images)
+}
+
+#[server]
+pub async fn delete_registered_reference_image(id: i32) -> Result<(), ServerFnError> {
+    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
+        get_db().await.clone(),
+    );
+
+    repo.delete(id).await?;
+    Ok(())
 }
 
 #[server]

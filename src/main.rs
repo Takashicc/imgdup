@@ -3,7 +3,6 @@ use dioxus::prelude::*;
 mod adapter;
 mod backend;
 mod components;
-mod config;
 mod image_processing;
 mod models;
 mod repositories;
