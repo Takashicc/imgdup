@@ -1,27 +1,48 @@
-# Development
+# imgdup
 
-Your new jumpstart project includes basic organization with an organized `assets` folder and a `components` folder. 
-If you chose to develop with the router feature, you will also have a `views` folder.
+imgdup is an application that searches for similar images based on registered images.
 
-### Tailwind
-1. Install npm: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
-2. Install the Tailwind CSS CLI: https://tailwindcss.com/docs/installation
-3. Run the following command in the root of the project to start the Tailwind CSS compiler:
+## Development
+
+### Install the following tools
+
+- Rust
+  - <https://www.rust-lang.org/tools/install>
+- Dioxus cli
+  - <https://dioxuslabs.com/learn/0.6/getting_started/#install-the-dioxus-cli>
+- tailwind cli
+  - <https://tailwindcss.com/docs/installation/tailwind-cli>
+- Task
+  - <https://taskfile.dev>
+
+### Setup
+
+Clone the repository:
 
 ```bash
-npx tailwindcss -i ./input.css -o ./assets/tailwind.css --watch
+git clone https://github.com/Takashicc/imgdup
 ```
 
-### Serving Your App
+Install the npm dependencies:
 
-Run the following command in the root of your project to start developing with the default platform:
+```bash
+npm i
+```
+
+Run the following command to create the [./db.sqlite](/db.sqlite) file:
+
+```bash
+task migration:up
+```
+
+Run the following command to generate the [./assets/tailwind.css](/assets/tailwind.css) file:
+
+```bash
+task tailwind
+```
+
+Open a a new terminal window and run the following command to build, watch & serve the Dioxus project:
 
 ```bash
 dx serve
 ```
-
-To run for a different platform, use the `--platform platform` flag. E.g.
-```bash
-dx serve --platform desktop
-```
-
