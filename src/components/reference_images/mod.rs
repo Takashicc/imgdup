@@ -1,4 +1,4 @@
-use crate::backend;
+use crate::{backend, components::common};
 use dioxus::{logger::tracing::error, prelude::*};
 
 mod card;
@@ -72,40 +72,47 @@ pub fn ReferenceImages() -> Element {
                     h3 { class: "mb-4", "Registered reference images" }
                     div {
                         {
-                            match registered_reference_images_resource.unwrap() {
-                                Ok(reference_images) => {
-                                    rsx! {
-                                        if reference_images.len() > 0 {
-                                            for reference_image in reference_images {
-                                                card::RegisteredReferenceImageCard { reference_image, registered_reference_images_resource }
-                                            }
-                                        } else {
-                                            p { class: "text-xs text-error", "No registered reference images. Please register at least one image." }
-                                        }
-                                    }
-                                },
-                                Err(e) => {
-                                    rsx! {
-                                        div { role: "alert", class: "alert alert-error",
-                                            svg {
-                                                xmlns: "http://www.w3.org/2000/svg",
-                                                fill: "none",
-                                                "viewBox": "0 0 24 24",
-                                                class: "h-6 w-6 shrink-0 stroke-current",
-                                                path {
-                                                    "stroke-width": "2",
-                                                    "stroke-linejoin": "round",
-                                                    d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
-                                                    "stroke-linecap": "round",
+                            if is_registering() {
+                                rsx! {
+                                    common::LoadingSpinner { message: "Registering reference images..."}
+                                }
+                            } else {
+                                rsx! {
+                                    match registered_reference_images_resource.unwrap() {
+                                        Ok(reference_images) => {
+                                            rsx! {
+                                                if reference_images.len() > 0 {
+                                                    for reference_image in reference_images {
+                                                        card::RegisteredReferenceImageCard { reference_image, registered_reference_images_resource }
+                                                    }
+                                                } else {
+                                                    p { class: "text-xs text-error", "No registered reference images. Please register at least one image." }
                                                 }
                                             }
-                                            span { "Error! Task failed successfully." }
+                                        },
+                                        Err(e) => {
+                                            rsx! {
+                                                div { role: "alert", class: "alert alert-error",
+                                                    svg {
+                                                        xmlns: "http://www.w3.org/2000/svg",
+                                                        fill: "none",
+                                                        "viewBox": "0 0 24 24",
+                                                        class: "h-6 w-6 shrink-0 stroke-current",
+                                                        path {
+                                                            "stroke-width": "2",
+                                                            "stroke-linejoin": "round",
+                                                            d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
+                                                            "stroke-linecap": "round",
+                                                        }
+                                                    }
+                                                    span { "Error! Task failed successfully. {e}" }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-
                     }
                 }
             }
