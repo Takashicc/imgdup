@@ -14,6 +14,8 @@ pub async fn search_similar_images(
         return Ok(Vec::new());
     }
 
+    // TODO throw error when the reference images are not registered
+
     let target_files = match scan_images(&selected_directory) {
         Ok(v) => v,
         Err(e) => return Err(ServerFnError::new(e.to_string())),
