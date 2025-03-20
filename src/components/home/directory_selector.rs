@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_free_icons::{icons, Icon};
 
 #[component]
 pub fn DirectorySelector(selected_directory: Signal<String>) -> Element {
@@ -24,14 +25,27 @@ pub fn DirectorySelector(selected_directory: Signal<String>) -> Element {
                     class: "btn btn-outline btn-primary mr-3",
                     "Select directory"
                 }
-                label {
-                    class: "text-sm text-slate-500",
+                div { class: "text-sm text-slate-500",
                     if selected_directory() == "" {
-                        "No directory selected"
+                        div { "No directory selected" }
                     } else {
-                        {selected_directory()}
+                        div { class: "inline-block p-1 group rounded hover:bg-slate-100 transition-colors duration-100",
+                            span { class: "break-all",
+                                "{selected_directory()}",
+                                span { class: "whitespace-nowrap",
+                                    button {
+                                        class: "btn btn-xs btn-circle bg-gray-300 border-none ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-100 hover:bg-red-500",
+                                        onclick: move |_| selected_directory.set("".to_string()),
+                                        Icon {
+                                            fill: "white",
+                                            icon: icons::ld_icons::LdX,
+                                        },
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
             }
+        }
     }
 }
