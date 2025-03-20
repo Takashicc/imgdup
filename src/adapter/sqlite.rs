@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 use tokio::sync::OnceCell;
 
 const DATABASE_URL: &str = "sqlite://db.sqlite?mode=rwc";
