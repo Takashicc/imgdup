@@ -33,6 +33,7 @@ rayon = "1.10.0"
 walkdir = "2.5.0"
 log = "0.4.26"
 tokio = "1.44.0"
+dioxus-free-icons = { version = "0.9.0", features = ["lucide"] }
 
 
 [features]
