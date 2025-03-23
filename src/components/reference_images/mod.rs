@@ -5,6 +5,7 @@ mod card;
 
 #[component]
 pub fn ReferenceImages() -> Element {
+    let mut is_modal_open = use_signal(|| false);
     let mut selected_files = use_signal(Vec::<String>::new);
     let mut is_registering = use_signal(|| false);
 
@@ -15,12 +16,15 @@ pub fn ReferenceImages() -> Element {
         button {
             class: "btn btn-accent",
             onclick: move |_| {
-                document::eval("register_reference_images_modal.showModal()");
+                is_modal_open.toggle();
                 selected_files.write().clear();
             },
             "Check reference images"
         }
-        dialog { id: "register_reference_images_modal", class: "modal",
+        dialog {
+            id: "register_reference_images_modal",
+            class: "modal",
+            class: if is_modal_open() { "modal-open" },
             div { class: "modal-box max-w-2xl",
                 div { class: "container p-4",
                     h3 { class: "mb-4", "Register reference images" }
@@ -55,6 +59,11 @@ pub fn ReferenceImages() -> Element {
                         class: "btn btn-primary w-full mb-4",
                         disabled: is_registering(),
                         onclick: move |_| async move {
+                            if selected_files().is_empty() {
+                                common::show_toast("Please select files to register", common::ToastType::Info).await;
+                                return;
+                            }
+
                             is_registering.set(true);
 
                             if let Err(e) = backend::register_reference_images(selected_files()).await {
@@ -116,7 +125,7 @@ pub fn ReferenceImages() -> Element {
                     }
                 }
             }
-            form { method: "dialog", class: "modal-backdrop", button { "close" } }
+            form { method: "dialog", class: "modal-backdrop", button { onclick: move |_| is_modal_open.toggle(), "close" } }
         }
     }
 }

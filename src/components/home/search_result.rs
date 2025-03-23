@@ -43,6 +43,7 @@ pub fn SearchResult(
                                             input {
                                                 r#type: "checkbox",
                                                 class: "checkbox",
+                                                checked: selected_images().contains(&selected_image_filepath),
                                                 onclick: move |_| {
                                                     if selected_images().contains(&selected_image_filepath) {
                                                         selected_images.write().remove(&selected_image_filepath);

@@ -159,6 +159,23 @@ pub async fn delete_registered_reference_image(id: i32) -> Result<(), ServerFnEr
 }
 
 #[server]
+pub async fn delete_similar_images(selected_images: Vec<String>) -> Result<(), ServerFnError> {
+    for selected_image in selected_images {
+        let path = Path::new(&selected_image);
+        if path.exists() {
+            std::fs::remove_file(path).map_err(|e| ServerFnError::new(e.to_string()))?;
+        } else {
+            return Err(ServerFnError::new(format!(
+                "File not found: {}",
+                path.display()
+            )));
+        }
+    }
+
+    Ok(())
+}
+
+#[server]
 pub async fn open_folder_in_explorer(path: String) -> Result<(), ServerFnError> {
     let path = Path::new(&path);
     #[cfg(target_os = "windows")]

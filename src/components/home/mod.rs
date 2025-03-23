@@ -14,10 +14,12 @@ mod search_result;
 #[component]
 pub fn Home() -> Element {
     let selected_directory = use_signal(String::new);
-    let selected_images = use_signal(HashSet::<String>::new);
+    let mut selected_images = use_signal(HashSet::<String>::new);
 
     let mut similar_images = use_signal(Vec::<models::SimilarImage>::new);
     let mut is_searching = use_signal(|| false);
+
+    let mut is_confirm_dialog_open = use_signal(|| false);
 
     rsx! {
         div { class: "container p-4",
@@ -54,11 +56,35 @@ pub fn Home() -> Element {
         div { class: "container p-4",
             button {
                 class: "btn btn-warning w-full",
-                onclick: move |_| {
-                    info!("Selected images: {:?}", selected_images());
+                onclick: move |_| async move {
+                    if selected_images().is_empty() {
+                        common::show_toast("Please select images to delete", common::ToastType::Info).await;
+                        return;
+                    }
+
+                    is_confirm_dialog_open.set(true);
                 },
                 "Delete selected images"
             }
+        }
+
+        common::ConfirmDialog {
+            title: "Are you sure you want to delete the selected images?".to_string(),
+            message: "Selected {selected_images().len()} images will be deleted.",
+            is_open: is_confirm_dialog_open,
+            on_confirm: move |_| async move {
+                let selected_similar_images = selected_images().iter().map(|image| image.clone()).collect();
+                if let Ok(_) = backend::delete_similar_images(selected_similar_images).await {
+                    common::show_toast("Selected images deleted", common::ToastType::Success).await;
+                } else {
+                    common::show_toast("Failed to delete selected images", common::ToastType::Error).await;
+                }
+
+                // TODO make the deleted files unselectable
+                selected_images.write().clear();
+                is_confirm_dialog_open.set(false);
+            },
+            on_cancel: move |_| async move {},
         }
     }
 }
