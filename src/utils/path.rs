@@ -4,6 +4,7 @@ pub fn normalize_path(p: &str) -> String {
     #[cfg(target_os = "windows")]
     {
         let p = p.replace("\\", "/");
+        let p = p.replace("//", "/");
         format!("http://dioxus.localhost/{p}")
     }
     #[cfg(target_os = "macos")]
