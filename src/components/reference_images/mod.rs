@@ -60,7 +60,7 @@ pub fn ReferenceImages() -> Element {
                         disabled: is_registering(),
                         onclick: move |_| async move {
                             if selected_files().is_empty() {
-                                common::show_toast("Please select files to register", common::ToastType::Info).await;
+                                common::toast::show_toast("Please select files to register", common::toast::ToastType::Info).await;
                                 return;
                             }
 

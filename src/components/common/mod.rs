@@ -1,58 +1,5 @@
+pub mod toast;
 use dioxus::prelude::*;
-
-pub enum ToastType {
-    Info,
-    Success,
-    Warning,
-    Error,
-}
-
-pub async fn show_toast(message: &str, toast_type: ToastType) {
-    let (alert_class, icon) = match toast_type {
-        ToastType::Info => ("alert-info", "ℹ️"),
-        ToastType::Success => ("alert-success", "✅"),
-        ToastType::Warning => ("alert-warning", "⚠️"),
-        ToastType::Error => ("alert-error", "❌"),
-    };
-
-    let js = format!(
-        r#"
-    const alert = document.createElement('div');
-    alert.className = 'alert {alert_class}';
-    alert.style.transition = 'opacity 0.5s ease-in-out';
-
-    const icon = document.createElement('span');
-    icon.textContent = '{icon}';
-    icon.style.marginRight = '8px';
-
-    const span = document.createElement('span');
-    span.textContent = '{message}';
-
-    alert.appendChild(icon);
-    alert.appendChild(span);
-
-    let container = document.querySelector('.toast-container');
-    if (!container) {{
-        container = document.createElement('div');
-        container.className = 'toast-container toast toast-top toast-center';
-        container.style.zIndex = '9999';
-        document.body.appendChild(container);
-    }}
-
-    container.insertAdjacentElement('afterbegin', alert);
-    setTimeout(() => {{
-        alert.style.opacity = '0';
-        setTimeout(() => {{
-            alert.remove();
-            if (!container.hasChildNodes()) {{
-                container.remove();
-            }}
-        }}, 500);
-    }}, 2500);
-    "#,
-    );
-    let _ = dioxus::document::eval(js.as_str()).await;
-}
 
 #[component]
 pub fn LoadingSpinner(message: String) -> Element {

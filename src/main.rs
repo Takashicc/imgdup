@@ -19,10 +19,13 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+    components::common::toast::use_toast_context();
+
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
 
+        components::common::toast::ToastPortal {  }
         components::home::Home {}
     }
 }
