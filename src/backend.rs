@@ -1,17 +1,24 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::{BTreeMap, HashMap},
+    path::Path,
+};
 
 use anyhow::{Context, Result};
-use dioxus::prelude::*;
+use dioxus::prelude::{
+    server_fn::codec::{JsonStream, StreamingJson},
+    *,
+};
 use sea_orm::IntoActiveModel;
+use serde::{Deserialize, Serialize};
 
 use crate::{adapter::sqlite::get_db, image_processing, models, repositories};
 
 #[server]
 pub async fn search_similar_images(
     selected_directory: String,
-) -> Result<Vec<models::SimilarImage>, ServerFnError> {
+) -> Result<BTreeMap<u32, models::SimilarImage>, ServerFnError> {
     if selected_directory == "" {
-        return Ok(Vec::new());
+        return Ok(BTreeMap::<u32, models::SimilarImage>::new());
     }
 
     // TODO throw error when the reference images are not registered
@@ -43,14 +50,25 @@ pub async fn search_similar_images(
         })
         .collect::<Vec<_>>();
 
-    let mut similar_images = Vec::new();
+    let mut similar_images = BTreeMap::<u32, models::SimilarImage>::new();
     calc_results.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
-    for (file, sim) in calc_results.into_iter().filter(|(_, s)| *s >= 90).take(10) {
-        similar_images.push(models::SimilarImage {
-            filepath: format!("{}", file.to_string()),
-            similarity: sim,
-        });
+    for (i, (file, sim)) in calc_results
+        .into_iter()
+        .filter(|(_, s)| *s >= 90)
+        .take(10)
+        .enumerate()
+    {
+        similar_images.insert(
+            i as u32,
+            models::SimilarImage {
+                filepath: format!("{}", file.to_string()),
+                similarity: sim,
+                is_deleted: false,
+                error_message: None,
+            },
+        );
     }
+
     Ok(similar_images)
 }
 
@@ -158,26 +176,59 @@ pub async fn delete_registered_reference_image(id: i32) -> Result<(), ServerFnEr
     Ok(())
 }
 
-#[server]
-pub async fn delete_similar_images(selected_images: Vec<String>) -> Result<(), ServerFnError> {
-    for selected_image in selected_images {
-        let path = Path::new(&selected_image);
-        if path.exists() {
-            std::fs::remove_file(path).map_err(|e| ServerFnError::new(e.to_string()))?;
-        } else {
-            return Err(ServerFnError::new(format!(
-                "File not found: {}",
-                path.display()
-            )));
-        }
-    }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeleteProgress {
+    pub image_id: u32,
+    pub is_success: bool,
+    pub message: Option<String>,
+}
 
-    Ok(())
+#[server(output = StreamingJson)]
+pub async fn delete_similar_images_stream(
+    selected_images: Vec<(u32, String)>,
+) -> Result<JsonStream<DeleteProgress>, ServerFnError> {
+    let (tx, rx) = futures::channel::mpsc::unbounded();
+    tokio::spawn(async move {
+        for (image_id, selected_image) in selected_images {
+            let path = Path::new(&selected_image);
+            let mut progress = DeleteProgress {
+                image_id,
+                is_success: false,
+                message: None,
+            };
+            if path.exists() {
+                match std::fs::remove_file(path) {
+                    Ok(_) => {
+                        progress.is_success = true;
+                    }
+                    Err(e) => {
+                        progress.message = Some(e.to_string());
+                    }
+                }
+            } else {
+                progress.message = Some("File not found".to_string());
+            }
+
+            if tx.unbounded_send(Ok(progress)).is_err() {
+                break;
+            }
+        }
+    });
+
+    Ok(JsonStream::<DeleteProgress>::new(rx))
 }
 
 #[server]
 pub async fn open_folder_in_explorer(path: String) -> Result<(), ServerFnError> {
     let path = Path::new(&path);
+
+    if !path.exists() {
+        return Err(ServerFnError::new(format!(
+            "File not found: {}",
+            path.display()
+        )));
+    }
+
     #[cfg(target_os = "windows")]
     {
         use std::process::Command;
