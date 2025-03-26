@@ -34,6 +34,8 @@ walkdir = "2.5.0"
 log = "0.4.26"
 tokio = "1.44.0"
 dioxus-free-icons = { version = "0.9.0", features = ["lucide"] }
+futures = "0.3.31"
+async-std = "1.13.1"
 
 
 [features]
