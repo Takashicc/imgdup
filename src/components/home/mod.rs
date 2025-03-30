@@ -34,7 +34,7 @@ pub fn Home() -> Element {
                 disabled: is_searching(),
                 onclick: move |_| async move {
                     if selected_directory().is_empty() {
-                        common::toast::show_toast("Please select a directory", common::toast::ToastType::Info).await;
+                        common::show_toast("Please select a directory", common::ToastType::Info).await;
                         return;
                     }
 
@@ -59,7 +59,7 @@ pub fn Home() -> Element {
                 class: "btn btn-warning w-full",
                 onclick: move |_| async move {
                     if selected_images().is_empty() {
-                        common::toast::show_toast("Please select images to delete", common::toast::ToastType::Info).await;
+                        common::show_toast("Please select images to delete", common::ToastType::Info).await;
                         return;
                     }
 
@@ -96,9 +96,9 @@ pub fn Home() -> Element {
                 }
 
                 if all_success {
-                    common::toast::show_toast("All selected images were deleted", common::toast::ToastType::Success).await;
+                    common::show_toast("All selected images were deleted", common::ToastType::Success).await;
                 } else {
-                    common::toast::show_toast("Failed to delete some selected images", common::toast::ToastType::Error).await;
+                    common::show_toast("Failed to delete some selected images", common::ToastType::Error).await;
                 }
 
                 selected_images.write().clear();

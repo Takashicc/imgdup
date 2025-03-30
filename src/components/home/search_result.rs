@@ -83,7 +83,7 @@ pub fn SearchResultRow(
                     let path = similar_image.filepath.clone();
                     async move {
                         if let Err(e) = backend::open_folder_in_explorer(path).await {
-                            common::toast::show_toast(e.to_string().as_str(), common::toast::ToastType::Error).await;
+                            common::show_toast(e.to_string().as_str(), common::ToastType::Error).await;
                         }
                     }
                 },
