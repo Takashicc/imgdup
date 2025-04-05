@@ -40,9 +40,14 @@ pub fn Home() -> Element {
 
                     is_searching.set(true);
 
-                    if let Ok(result) = backend::search_similar_images(selected_directory()).await{
-                        similar_images.write().clear();
-                        similar_images.write().extend(result);
+                    match backend::search_similar_images(selected_directory()).await {
+                        Ok(result) => {
+                            similar_images.write().clear();
+                            similar_images.write().extend(result);
+                        }
+                        Err(e) => {
+                            common::show_toast(e.to_string().as_str(), common::ToastType::Error).await;
+                        }
                     }
 
                     is_searching.set(false);

@@ -21,14 +21,6 @@ pub async fn search_similar_images(
         return Ok(BTreeMap::<u32, models::SimilarImage>::new());
     }
 
-    // TODO throw error when the reference images are not registered
-
-    let target_files = match scan_images(&selected_directory) {
-        Ok(v) => v,
-        Err(e) => return Err(ServerFnError::new(e.to_string())),
-    };
-
-    use rayon::prelude::*;
     let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
         get_db().await.clone(),
     );
@@ -37,6 +29,17 @@ pub async fn search_similar_images(
         .iter()
         .map(|i| img_hash::ImageHash::from_bytes(&i.hash).unwrap())
         .collect::<Vec<_>>();
+
+    if reference_hashes.is_empty() {
+        return Err(ServerFnError::new("No reference images registered"));
+    }
+
+    let target_files = match scan_images(&selected_directory) {
+        Ok(v) => v,
+        Err(e) => return Err(ServerFnError::new(e.to_string())),
+    };
+
+    use rayon::prelude::*;
 
     let mut calc_results = target_files
         .par_iter()
