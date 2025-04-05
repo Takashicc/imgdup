@@ -5,7 +5,7 @@ use crate::{
 };
 use std::collections::{BTreeMap, HashSet};
 
-use dioxus::{logger::tracing::info, prelude::*};
+use dioxus::prelude::*;
 use futures::StreamExt;
 use search_result::SearchResult;
 

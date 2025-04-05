@@ -1,6 +1,7 @@
 use std::{
     collections::{BTreeMap, HashMap},
     path::Path,
+    sync::Mutex,
 };
 
 use anyhow::{Context, Result};
@@ -133,15 +134,27 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
         .map(|i| (i.filepath.clone(), i.clone().into_active_model()))
         .collect::<HashMap<String, entity::reference_image::ActiveModel>>();
 
-    // TODO rayon
-    let mut new_images = Vec::new();
-    for selected_file in selected_files {
-        let hash = image_processing::compute_hash(&selected_file)
+    use rayon::prelude::*;
+    let selected_file_hashmap = Mutex::new(HashMap::new());
+    selected_files.par_iter().for_each(|selected_file| {
+        let hash = image_processing::compute_hash(selected_file)
             .unwrap()
             .as_bytes()
             .to_vec();
+        selected_file_hashmap
+            .lock()
+            .unwrap()
+            .insert(selected_file.as_str(), hash);
+    });
+    let selected_file_hashmap = selected_file_hashmap.into_inner().unwrap();
 
-        if let Some(v) = existing_filepaths.get(&selected_file) {
+    let mut new_images = Vec::new();
+    for selected_file in selected_files.clone() {
+        let hash = selected_file_hashmap
+            .get(selected_file.as_str())
+            .unwrap()
+            .to_vec();
+        if let Some(v) = existing_filepaths.get(selected_file.as_str()) {
             let mut v = v.clone();
             v.hash = sea_orm::Set(hash);
             repo.update(v).await?;
@@ -149,7 +162,7 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
             new_images.push(models::reference_image::ReferenceImageInput {
                 filepath: selected_file,
                 hash,
-            })
+            });
         }
     }
 
