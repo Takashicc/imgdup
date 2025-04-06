@@ -12,7 +12,7 @@ use dioxus::prelude::{
 use sea_orm::IntoActiveModel;
 use serde::{Deserialize, Serialize};
 
-use crate::{adapter::sqlite::get_db, image_processing, models, repositories};
+use crate::{di::get_container, image_processing, models};
 
 #[server]
 pub async fn search_similar_images(
@@ -22,10 +22,8 @@ pub async fn search_similar_images(
         return Ok(BTreeMap::<u32, models::SimilarImage>::new());
     }
 
-    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
-        get_db().await.clone(),
-    );
-    let reference_images = repo.find_all().await?;
+    let reference_image_repository = get_container().await.reference_image_repository.clone();
+    let reference_images = reference_image_repository.find_all().await?;
     let reference_hashes = reference_images
         .iter()
         .map(|i| img_hash::ImageHash::from_bytes(&i.hash).unwrap())
@@ -124,11 +122,10 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
         return Ok(());
     }
 
-    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
-        get_db().await.clone(),
-    );
-
-    let existing_images = repo.find_by_filepaths(&selected_files).await?;
+    let reference_image_repository = get_container().await.reference_image_repository.clone();
+    let existing_images = reference_image_repository
+        .find_by_filepaths(&selected_files)
+        .await?;
     let existing_filepaths = existing_images
         .iter()
         .map(|i| (i.filepath.clone(), i.clone().into_active_model()))
@@ -157,7 +154,7 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
         if let Some(v) = existing_filepaths.get(selected_file.as_str()) {
             let mut v = v.clone();
             v.hash = sea_orm::Set(hash);
-            repo.update(v).await?;
+            reference_image_repository.update(v).await?;
         } else {
             new_images.push(models::reference_image::ReferenceImageInput {
                 filepath: selected_file,
@@ -166,7 +163,7 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
         }
     }
 
-    repo.create_many(new_images).await?;
+    reference_image_repository.create_many(new_images).await?;
 
     Ok(())
 }
@@ -174,21 +171,15 @@ pub async fn register_reference_images(selected_files: Vec<String>) -> Result<()
 #[server]
 pub async fn get_registered_reference_images(
 ) -> Result<Vec<entity::reference_image::Model>, ServerFnError> {
-    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
-        get_db().await.clone(),
-    );
-
-    let reference_images = repo.find_all().await?;
+    let reference_image_repository = get_container().await.reference_image_repository.clone();
+    let reference_images = reference_image_repository.find_all().await?;
     Ok(reference_images)
 }
 
 #[server]
 pub async fn delete_registered_reference_image(id: i32) -> Result<(), ServerFnError> {
-    let repo = repositories::reference_image_repository::ReferenceImageRepository::new(
-        get_db().await.clone(),
-    );
-
-    repo.delete(id).await?;
+    let reference_image_repository = get_container().await.reference_image_repository.clone();
+    reference_image_repository.delete(id).await?;
     Ok(())
 }
 

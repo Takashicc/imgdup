@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 mod adapter;
 mod backend;
 mod components;
+mod di;
 mod image_processing;
 mod models;
 mod repositories;
@@ -14,7 +15,8 @@ const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 fn main() {
     dioxus::logger::init(dioxus::logger::tracing::Level::DEBUG)
         .expect("Failed to initialize logger");
-    dioxus::launch(App);
+
+    dioxus::LaunchBuilder::new().launch(App);
 }
 
 #[component]
