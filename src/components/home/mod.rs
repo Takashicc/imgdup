@@ -31,7 +31,7 @@ pub fn Home() -> Element {
 
             button {
                 class: "btn btn-primary w-full",
-                disabled: is_searching(),
+                disabled: selected_directory().is_empty() || is_searching(),
                 onclick: move |_| async move {
                     if selected_directory().is_empty() {
                         common::show_toast("Please select a directory", common::ToastType::Info).await;
@@ -62,6 +62,7 @@ pub fn Home() -> Element {
         div { class: "container p-4",
             button {
                 class: "btn btn-warning w-full",
+                disabled: selected_images().is_empty(),
                 onclick: move |_| async move {
                     if selected_images().is_empty() {
                         common::show_toast("Please select images to delete", common::ToastType::Info).await;

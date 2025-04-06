@@ -21,7 +21,7 @@ pub fn SearchResult(
             if is_searching() {
                 common::LoadingSpinner{ message: "Searching for duplicated images..." }
             } else if similar_images().is_empty() {
-                div { class: "text-left text-gray-500", "No results" }
+                div { class: "text-left text-gray-500", "No results found" }
             } else {
                 table { class: "table w-full",
                     thead {
